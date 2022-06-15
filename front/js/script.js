@@ -25,7 +25,7 @@ fetch('http://localhost:3000/api/products')
       // add image, title and description in the <article> tag
       article.innerHTML = "<img src=" + valu.imageUrl + " alt='Lorem ipsum dolor sit amet, Kanap name1'>" + "<h3 class='productName'>" + valu.name + "</h3>" + "<p class='productDescription'>" + valu.description + "</p>";
 
-      console.log(valu);
+      console.log(valu)
 
     }
 
