@@ -17,29 +17,33 @@ let quantity;
  * @return ajout des élément dans le dom 
  */
 function addCard() {
-    for (let key in produitLocalStorage) {
-        /**
-         * @return document.createElement('article');
-         */
-        let Article = document.createElement('article');
-        let id = produitLocalStorage[key]._id;
-        colors = produitLocalStorage[key].colors;
-        quantity = produitLocalStorage[key].quantity;
-        let Img = produitLocalStorage[key].img;
-        let Altimg = produitLocalStorage[key].altImg;
-        let Name = produitLocalStorage[key].name;
-        let Price = produitLocalStorage[key].price;
-        // ajoute l'élément Article comme enfants de l'élément section
-        section.appendChild(Article);
-        // ajout de la classe "cart__item" 
-        Article.classList.add("cart__item")
-        // ajout de l'attribut "data-id"
-        Article.setAttribute("data-id", `${id}`);
-        // ajout de l'attribut data-color
-        Article.setAttribute("data-color", `${colors}`);
-        // ajout des éléments sous format html 
-        Article.innerHTML =
-            `<div class="cart__item__img">
+    console.log(produitLocalStorage);
+
+    if (produitLocalStorage.length >= 1) {
+
+        for (let key in produitLocalStorage) {
+            /**
+             * @return document.createElement('article');
+             */
+            let Article = document.createElement('article');
+            let id = produitLocalStorage[key]._id;
+            colors = produitLocalStorage[key].colors;
+            quantity = produitLocalStorage[key].quantity;
+            let Img = produitLocalStorage[key].img;
+            let Altimg = produitLocalStorage[key].altImg;
+            let Name = produitLocalStorage[key].name;
+            let Price = produitLocalStorage[key].price;
+            // ajoute l'élément Article comme enfants de l'élément section
+            section.appendChild(Article);
+            // ajout de la classe "cart__item" 
+            Article.classList.add("cart__item")
+            // ajout de l'attribut "data-id"
+            Article.setAttribute("data-id", `${id}`);
+            // ajout de l'attribut data-color
+            Article.setAttribute("data-color", `${colors}`);
+            // ajout des éléments sous format html 
+            Article.innerHTML =
+                `<div class="cart__item__img">
                             <img src="${Img}" alt="${Altimg}">
                         </div>
                         <div class="cart__item__content__description">
@@ -59,6 +63,11 @@ function addCard() {
                             </div>
                     </div> `;
 
+        }
+    }
+    else {
+        let titre_Alert = document.getElementById('cart__items');
+        titre_Alert.innerHTML = "<h1>Le panier est vide ! </h1>"
     }
 
 }
@@ -287,9 +296,19 @@ function ajoute() {
         e.preventDefault();
         //crée un tableau avec les id des produit present dans localStorage
         let id = [];
-        for (let i = 0; i < produitLocalStorage.length; i++) {
-            id.push(produitLocalStorage[i]._id);
+        console.log(produitLocalStorage);
+        if (produitLocalStorage !== null) {
+            if (produitLocalStorage.length >= 1) {
+                for (let i = 0; i < produitLocalStorage.length; i++) {
+                    id.push(produitLocalStorage[i]._id);
+                }
+            } else {
+
+                alert('le panier est vide !')
+
+            }
         }
+
         console.log(id);
         // crée un tableau contact et y ajoute le tableau des produit 
         const tab = {
@@ -313,33 +332,38 @@ function ajoute() {
             },
         };
         // envoie de l'objet contact et du tableau des id de chaque produit present l'or de la commande 
-        fetch("http://localhost:3000/api/products//order", options)
+        if (produitLocalStorage !== null) {
+            if (produitLocalStorage.length >= 1) {
+                fetch("http://localhost:3000/api/products//order", options)
 
-            .then((response) => response.json())
+                    .then((response) => response.json())
 
-            .then((res) => {
+                    .then((res) => {
 
-                console.log(res.orderId);
+                        console.log(res.orderId);
 
-                console.log(verify());
-                if (verify()) {
-                    localStorage.clear();
-                    localStorage.setItem('orderId', res.orderId);
-                    document.location.href = 'confirmation.html?orderId=' + res.orderId;
-                } else {
+                        console.log(verify());
 
-                    firstNameErrorMsg.innerHTML = "merci de renseigner ce champ !";
-                    lastNameErrorMsg.innerHTML = "merci de renseigner ce champ !";
-                    addressErrorMsg.innerHTML = "merci de renseigner ce champ !";
-                    cityErrorMsg.innerHTML = "merci de renseigner ce champ !";
-                    emailErrorMsg.innerHTML = "merci de renseigner ce champ !";
-                }
+                        if (verify()) {
+                            localStorage.clear();
+                            document.location.href = 'confirmation.html?orderId=' + res.orderId;
+                        } else {
 
-            })
+                            firstNameErrorMsg.innerHTML = "merci de renseigner ce champ !";
+                            lastNameErrorMsg.innerHTML = "merci de renseigner ce champ !";
+                            addressErrorMsg.innerHTML = "merci de renseigner ce champ !";
+                            cityErrorMsg.innerHTML = "merci de renseigner ce champ !";
+                            emailErrorMsg.innerHTML = "merci de renseigner ce champ !";
+                        }
 
-            .catch((error) => {
-                console.log("error :" + error)
-            })
+                    })
+
+                    .catch((error) => {
+                        console.log("error :" + error)
+                    })
+
+            }
+        }
     })
 }
 ajoute();
