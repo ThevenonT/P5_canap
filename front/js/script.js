@@ -34,7 +34,7 @@ fetch('http://localhost:3000/api/products')
         "<h3 class='productName'>" + valu.name + "</h3>" +
         "<p class='productDescription'>" + valu.description + "</p>";
 
-      console.log(valu);
+      console.log('produit individuel: ', valu);
 
     }
 
