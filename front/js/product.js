@@ -1,95 +1,111 @@
 // PAGE PRODUITS \\
-let article = "";
+let article;
 let _id;
-/**
- * @return la couleur du produit;
- */
+/** 
+ * @returns product color 
+*/
 const couleurs = document.getElementById('colors');
 
-/**
- * @return la quantité du produit; 
- */
+/** 
+* @returns the quantity of the product 
+*/
 const quantity = document.getElementById('quantity');
 
-/* récupère l'id dans l'url */
+/* get id from url */
 let url = new URL(window.location.href);
 let search_params = new URLSearchParams(url.search);
 if (search_params.has('id')) {
     _id = search_params.get('id');
 }
-Fetch();
+
 /**
- * fait une requête a l'api avec l'id présent dans l'url ;
- * @return la function produit() si le produit est présent dans l'api;
+ * make a request to the api with the id present in the url ;
+ * @param id - Identification of the product to be recovered 
+ * @return article;
  */
+export default async function Fetch_ID(id) {
+    if (id !== undefined) {
 
-function Fetch() {
-    // requête l'api avec l'id présent dans l'url
-    fetch('http://localhost:3000/api/products/' + _id)
-        // si la réponse du server a un status(200)
-        .then(function (res) {
-            // si la réponse est ok 
-            if (res.ok) {
-                // passe la réponse en format json 
-                return res.json();
-            }
-        })
 
-        .then(async function (value) {
-            // attend la réponse du server et la stock dans une variable 
-            article = await value;
-            // si la variable article est déclaré 
-            if (article) {
-                // renvoie la function produit
-                produit(article);
-            }
+        // request the api with the id present in the url
+        return await fetch('http://localhost:3000/api/products/' + id)
 
-        })
+            // if the response from the server has a status(200)
+            .then(function (res) {
 
-        .catch(function (err) {
+                if (res.ok) {
+                    // pass the response in json format
+                    return res.json();
+                }
+            })
 
-            // Une erreur est survenue
-            console.log("il y a une erreur " + err);
-        });
+            .then(async function (value) {
+                // waits for the response from the server and stores it in a variable
+                article = await value;
 
-}
+                // if the article variable is declared
+                if (article) {
+                    console.log(article);
+                }
+                return article
+
+            })
+            .catch(function (err) {
+
+                // An error has occurred
+                console.log("il y a une erreur " + err);
+            });
+    }
+};
+
+
+
+Fetch_ID(_id)
+    .then(async function (article) { produit(await article) })
+    .catch((err) => console.log(err));
 
 
 /**
- * ajoute les element dans le DOM
+ * add the elements in the DOM
  * @param {*} article 
  */
-function produit(article) {
+async function produit(article) {
+    console.log(article);
+    if (article !== undefined) {
+        /* get the "item__img" class and add an image to it  */
+        const item__img = document.getElementsByClassName("item__img");
+        item__img[0].innerHTML = "<img src=" + article.imageUrl + " alt=" + article.altTxt + "></img>";
 
-    /* récupère la classe "item__img" et lui ajoute une image avec l'url  */
-    const item__img = document.getElementsByClassName("item__img");
-    item__img[0].innerHTML = "<img src=" + article.imageUrl + " alt=" + article.altTxt + "></img>";
+        /* retrieves the element with the id title and adds the associated name  */
+        const title = document.getElementById('title');
+        title.innerText = article.name;
 
-    /* récupère l'element avec l'id title et lui a ajoute le nom associer  */
-    const title = document.getElementById('title');
-    title.innerText = article.name;
+        /* retrieves the element with the id price and adds the associated price */
+        const price = document.getElementById('price');
+        price.innerText = article.price
 
-    /* récupère l'element avec l'id price et lui ajoute le prix associer */
-    const price = document.getElementById('price');
-    price.innerText = article.price
-
-    /* récupère l'element avec l'id description et lui ajoute la description associer */
-    const description = document.getElementById('description');
-    description.innerText = article.description;
+        /* retrieves the element with the id description and adds the associated description */
+        const description = document.getElementById('description');
+        description.innerText = article.description;
 
 
 
-    /* récupère l'element avec l'id colors et lui ajoute la/les couleur/s associer */
-    for (let colors of article.colors) {
-        let productColors = document.createElement("option");
-        document.querySelector("#colors").appendChild(productColors);
-        productColors.value = colors;
-        productColors.innerHTML = colors;
+        /* retrieves the element with the id colors and adds the associated color(s)*/
+        for (let colors of article.colors) {
+            let productColors = document.createElement("option");
+            document.querySelector("#colors").appendChild(productColors);
+            productColors.value = colors;
+            productColors.innerHTML = colors;
+        }
+
+        panier(await article);
     }
-
-    panier(article);
 }
 
+/**
+ * store products in localStorage 
+ * @param {*} article 
+ */
 function panier(article) {
 
     const btn = document.querySelector("#addToCart");
@@ -98,37 +114,35 @@ function panier(article) {
         console.log(quantity.value);
         console.log("couleurs : " + couleurs.value.length);
 
-        // vérifie si la couleur et la quantité ne sont pas vide
+        // check if color and quantity are not empty
         if (couleurs.value.length > 0 && quantity.value <= 100 && quantity.value != 0) {
 
-            // récupères les couleur et la quantité sélectionnée
+            // get the selected color and quantity
             let Couleur = couleurs.value;
             let Quantity = Number(quantity.value);
 
 
             /**
-             * objet à ajouter au panier
+             * new item to add to cart
              * @return Objet json 
              */
             let obj = {
                 _id: _id,
                 colors: Couleur,
                 quantity: Number(Quantity),
-                name: article.name,
-                price: article.price,
-                description: article.description,
-                img: article.imageUrl,
-                altImg: article.altTxt
+
             }
             /**
-             * @return les produits présents dans localStorage.getItem('obj');
+             * @return the products present in localStorage.getItem('obj');
              */
+
             let produitLocalStorage = JSON.parse(localStorage.getItem("obj"));
             console.log(produitLocalStorage);
+            console.log(localStorage);
 
 
             /**
-             * @return une boite de confirmation si oui redirection vers le panier
+             * @return a confirmation box if yes redirection to the basket
              */
             const confirmation = () => {
                 if (window.confirm(`${Quantity} ${article.name} ${Couleur} été ajouté à votre panier !` + `Pour consulter votre panier, cliquez sur OK`)) {
@@ -136,19 +150,19 @@ function panier(article) {
                 }
             }
 
-            // si un produit est present dans localStorage \\
-            if (produitLocalStorage) {
+            // if a product is present in localStorage \\
+            if (produitLocalStorage !== null) {
 
                 /**
-                 * vérifie si l'objet est deja dans le panier
-                 * @return le(s) produit(s) présent dans produitLocalStorage
+                 * checks if the item is already in the cart
+                 * @return the product(s) present in productLocalStorage
                  */
                 const Find = produitLocalStorage.find((element) => element._id === _id && element.colors === Couleur);
                 console.log(Find);
-                // si il est deja dans le panier 
+                // if the product is already in the basket
                 if (Find) {
                     /**
-                     * ajuste la quantité du produit  
+                     * adjust the quantity of the product  
                      * @return obj.quantity + Find.quantity
                      */
                     let ChangeQuantity = parseInt(obj.quantity) + parseInt(Find.quantity);
@@ -156,19 +170,18 @@ function panier(article) {
                     localStorage.setItem("obj", JSON.stringify(produitLocalStorage));
                     console.log("la quantités du produit est maintenant de : " + Find.quantity);
                     confirmation();
-                    // si il est deja dans le panier et que la couleur est pas la meme il l'ajoute 
+                    // if it is already in the basket and the color is not the same, it adds it
                 } else {
                     produitLocalStorage.push(obj);
                     localStorage.setItem("obj", JSON.stringify(produitLocalStorage));
                     confirmation();
 
                 }
-                //si il est pas dans le panier il l'ajoute au tableau 
+                // if the product is not in the basket add it to the table
             } else {
                 produitLocalStorage = [];
                 produitLocalStorage.push(obj);
                 localStorage.setItem("obj", JSON.stringify(produitLocalStorage));
-
                 confirmation()
             }
         }
