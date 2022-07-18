@@ -2,48 +2,47 @@
 let article;
 let _id;
 /** 
- * @returns product color 
+ * @returns couleur du produit  
 */
 const couleurs = document.getElementById('colors');
 
 /** 
-* @returns the quantity of the product 
+* @returns la quantité du produit  
 */
 const quantity = document.getElementById('quantity');
 
-/* get id from url */
+/* récupère l'id présent dans l'url */
 let url = new URL(window.location.href);
+console.log(url);
 let search_params = new URLSearchParams(url.search);
+// vérifie si le paramètre existe dans l'url  si oui @return true;
 if (search_params.has('id')) {
+    // récupère l'id dans les paramètre de l'url 
     _id = search_params.get('id');
 }
 
 /**
- * make a request to the api with the id present in the url ;
- * @param id - Identification of the product to be recovered 
- * @return article;
+ * requête l'api pour récupéré le produit associer a l'id présent dans l'url;
+ * @param id - identifient du produit  
+ * @return article - contient les informations du produit  
  */
 export default async function Fetch_ID(id) {
+
     if (id !== undefined) {
 
-
-        // request the api with the id present in the url
+        // requête l'api avec l'id présent dans l'url 
         return await fetch('http://localhost:3000/api/products/' + id)
-
-            // if the response from the server has a status(200)
+            // passe la réponse au format json 
             .then(function (res) {
-
                 if (res.ok) {
-                    // pass the response in json format
                     return res.json();
                 }
             })
 
             .then(async function (value) {
-                // waits for the response from the server and stores it in a variable
+                // attend la réponse du serveur et la stocke dans une variable 
                 article = await value;
 
-                // if the article variable is declared
                 if (article) {
                     console.log(article);
                 }
@@ -52,78 +51,91 @@ export default async function Fetch_ID(id) {
             })
             .catch(function (err) {
 
-                // An error has occurred
+                // si une erreur survient 
                 console.log("il y a une erreur " + err);
             });
     }
+
 };
 
 
+/**
+ * appelle de la function Fetch_ID()
+ * récupère le résultat de la requête dans une variable 
+ * et appelle la function produit avec l'article récupéré 
+ */
 
 Fetch_ID(_id)
-    .then(async function (article) { produit(await article) })
+    .then((article) => { produit(article) })
     .catch((err) => console.log(err));
 
 
 /**
- * add the elements in the DOM
+ * ajout les élément au DOM
  * @param {*} article 
  */
 async function produit(article) {
     console.log(article);
     if (article !== undefined) {
-        /* get the "item__img" class and add an image to it  */
+        /** récupère la balise avec la classe 'item_img' et lui ajoute l'image du produit */
         const item__img = document.getElementsByClassName("item__img");
         item__img[0].innerHTML = "<img src=" + article.imageUrl + " alt=" + article.altTxt + "></img>";
 
-        /* retrieves the element with the id title and adds the associated name  */
+        /**
+         * récupère la balise qui contient l'id 'title' et ajoute le nom de l'article
+         */
         const title = document.getElementById('title');
         title.innerText = article.name;
 
-        /* retrieves the element with the id price and adds the associated price */
+        /**
+         * récupère la balise qui contient la classe 'price' et ajoute le prix de l'article 
+         */
         const price = document.getElementById('price');
-        price.innerText = article.price
+        price.innerText = article.price;
 
-        /* retrieves the element with the id description and adds the associated description */
+        /**
+         * récupère la balise qui contient l'id 'description' et ajoute la description de l'article 
+         */
         const description = document.getElementById('description');
         description.innerText = article.description;
 
-
-
-        /* retrieves the element with the id colors and adds the associated color(s)*/
+        /**
+         * récupère les couleurs dans le tableau des couleurs du produit 
+         * récupère la balise qui contient l'id colors et ajoute les couleurs
+         */
         for (let colors of article.colors) {
             let productColors = document.createElement("option");
             document.querySelector("#colors").appendChild(productColors);
             productColors.value = colors;
             productColors.innerHTML = colors;
         }
-
+        // appelle de la function panier 
         panier(await article);
     }
 }
-
 /**
- * store products in localStorage 
+ * ajoute les produit dans le panier 
  * @param {*} article 
  */
 function panier(article) {
 
     const btn = document.querySelector("#addToCart");
+    // écoute si un évènement de type click se produit 
     btn.addEventListener("click", () => {
 
         console.log(quantity.value);
         console.log("couleurs : " + couleurs.value.length);
 
-        // check if color and quantity are not empty
+        // vérifie la déclaration de la couleur 
         if (couleurs.value.length > 0 && quantity.value <= 100 && quantity.value != 0) {
 
-            // get the selected color and quantity
+            // récupère la couleur et la quantité
             let Couleur = couleurs.value;
             let Quantity = Number(quantity.value);
 
 
             /**
-             * new item to add to cart
+             * crée un objet contenant l'id, la couleur et la quantité du produit 
              * @return Objet json 
              */
             let obj = {
@@ -133,16 +145,15 @@ function panier(article) {
 
             }
             /**
-             * @return the products present in localStorage.getItem('obj');
+             * @return les produit présent dans le panier;
              */
-
             let produitLocalStorage = JSON.parse(localStorage.getItem("obj"));
             console.log(produitLocalStorage);
             console.log(localStorage);
 
 
             /**
-             * @return a confirmation box if yes redirection to the basket
+             * @return une boite de confirmation si true redirige l'utilisateur sur la page panier
              */
             const confirmation = () => {
                 if (window.confirm(`${Quantity} ${article.name} ${Couleur} été ajouté à votre panier !` + `Pour consulter votre panier, cliquez sur OK`)) {
@@ -150,34 +161,34 @@ function panier(article) {
                 }
             }
 
-            // if a product is present in localStorage \\
+            // si le panier n'est pas vide \\
             if (produitLocalStorage !== null) {
 
                 /**
-                 * checks if the item is already in the cart
-                 * @return the product(s) present in productLocalStorage
+                 * vérifie si un produit avec le meme id et la meme couleur est present dans le panier 
                  */
                 const Find = produitLocalStorage.find((element) => element._id === _id && element.colors === Couleur);
                 console.log(Find);
-                // if the product is already in the basket
+                // si le produit est déjà dans le panier 
                 if (Find) {
                     /**
-                     * adjust the quantity of the product  
-                     * @return obj.quantity + Find.quantity
+                     * ajuste la quantité du produit  
                      */
                     let ChangeQuantity = parseInt(obj.quantity) + parseInt(Find.quantity);
                     Find.quantity = ChangeQuantity;
+                    // ajoute le produit modifier au panier 
                     localStorage.setItem("obj", JSON.stringify(produitLocalStorage));
                     console.log("la quantités du produit est maintenant de : " + Find.quantity);
+
                     confirmation();
-                    // if it is already in the basket and the color is not the same, it adds it
+                    // si le produit n'est pas présent dans le panier ajoute le produit au panier 
                 } else {
                     produitLocalStorage.push(obj);
                     localStorage.setItem("obj", JSON.stringify(produitLocalStorage));
                     confirmation();
 
                 }
-                // if the product is not in the basket add it to the table
+                // si le panier est vide ajoute le produit au panier 
             } else {
                 produitLocalStorage = [];
                 produitLocalStorage.push(obj);
@@ -187,4 +198,3 @@ function panier(article) {
         }
     });
 }
-

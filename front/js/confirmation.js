@@ -8,7 +8,7 @@ if (search_params.has('orderId')) {
     _id = search_params.get('orderId');
 }
 console.log('_id: ', _id);
-console.log(localStorage);
+
 
 let orderId = document.getElementById('orderId');
 orderId.innerHTML = _id;
